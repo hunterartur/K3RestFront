@@ -1,0 +1,17 @@
+.my-header {
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+a {
+    text-decoration: none;
+}
+
+.bok-nav {
+    width: 250px;
+}
+
+form>div {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
