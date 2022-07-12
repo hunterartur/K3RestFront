@@ -1,7 +1,7 @@
 let userUrl = 'http://localhost:8088/api/admin/users/';
 let roleUrl = 'http://localhost:8088/api/admin/roles/';
 let roles = [];
-let csrfToken;
+let elems;
 
 const form = document.getElementById('createUser');
 form.addEventListener('submit', sendFormOnServer);
@@ -30,20 +30,23 @@ async function sendFormOnServer(event) {
 }
 
 
-const form_update = document.getElementById('modalViewUpdate');
-form_update.addEventListener('submit', sendFormOnServerUpdate);
+const formUpdate = document.getElementById('modalViewUpdate');
+formUpdate.addEventListener('submit', sendFormOnServerUpdate);
 async function sendFormOnServerUpdate(event) {
     event.preventDefault();
-    const formData = new FormData(form_update);
-    const values = Object.fromEntries(formData.entries());
+    let id = document.querySelector('#mId');
+    let name = document.querySelector('#mName');
+    let surname = document.querySelector('#mSurname');
+    let age = document.querySelector('#mAge');
+    let email = document.querySelector('#mEmail');
+    let mRoles = document.querySelector('#mRoles');
     let role =[];
     for (let i = 0; i < roles.length; i++) {
-        if (values.createRoles == roles[i].name) {
+        if (mRoles.value == roles[i].name) {
           role.push(roles[i]);
         }
     }
-    let user = new UserDto(values.id,values.firstName,values.lastName,values.age,values.email,role);
-    console.log(user);
+    let user = new UserDto(id.value,name.value,surname.value,age.value,email.value,role);
     let response = await fetch(userUrl, {
         method: 'PUT',
         headers: {
@@ -51,6 +54,35 @@ async function sendFormOnServerUpdate(event) {
         },
         body: JSON.stringify(user)
     });
+    let result = await response.json();
+    if (response.status === 200) {
+        elems[0].innerHTML = result.id;
+        elems[1].innerHTML = result.name;
+        elems[2].innerHTML = result.surname;
+        elems[3].innerHTML = result.age;
+        elems[4].innerHTML = result.email;
+    }
+    console.log(response);
+}
+
+async function editModalForm(btn) {
+    //Получаю все ячейки строки tr где находиться кнопка
+    elems = btn.parentElement.parentElement.parentElement.childNodes;
+    let id = document.querySelector('#mId');
+    id.value = elems[0].innerHTML;
+    let name = document.querySelector('#mName');
+    name.value = elems[1].innerHTML;
+    let surname = document.querySelector('#mSurname');
+    surname.value = elems[2].innerHTML;
+    let age = document.querySelector('#mAge');
+    age.value = elems[3].innerHTML;
+    let email = document.querySelector('#mEmail');
+    email.value = elems[4].innerHTML;
+    fillSelect(roles, 'mRoles')
+    // let elems = btn.parentElement.parentElement.parentElement.childNodes;
+    // for (let i = 0; i < elems.length - 2; i++) {
+    //     console.log(elems[i].innerHTML);
+    // }
 }
 
 async function ready() {
@@ -67,8 +99,8 @@ async function ready() {
         '<td>' + result[i].surname + '</td>' +
         '<td>' + result[i].age + '</td>' +
         '<td>' + result[i].email + '</td>' +
-        '<td><div><button type="button" id="' + result[i].id + result[i].name + '" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalViewUpdate">Edit</button></div></td>' +
-        '<td><div><button type="button" id="' + result[i].id + result[i].name + '" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalViewDelete">Delete</button></div></td>' +
+        '<td><div><input type="button" id="' + result[i].id + '" onclick="editModalForm(this)" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalViewUpdate" value="Edit"></div></td>' +
+        '<td><div><input type="button" id="' + result[i].id + '" onclick="deleteModalForm(this)" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalViewDelete" value="Delete"></div></td>' +
         '</tr>';
 
         tableListUsers.append(str);
@@ -86,7 +118,6 @@ async function ready() {
     }
 }
 document.addEventListener("DOMContentLoaded", ready);
-
 
 function fillSelect(obj, idElem) {
     document.querySelectorAll('#' + idElem + ' option').forEach(option => option.remove());
